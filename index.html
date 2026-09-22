@@ -166,6 +166,17 @@
     font-size: 15px;
     font-family: inherit;
     width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    text-align: left;
+  }
+  input::placeholder { color: var(--text-dim); opacity: 1; }
+  input[type="date"] {
+    min-height: 42px;
+  }
+  input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
   }
   input:focus {
     outline: none;
