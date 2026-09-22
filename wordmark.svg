@@ -1,0 +1,39 @@
+<svg viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#202427"/>
+      <stop offset="100%" stop-color="#15181B"/>
+    </linearGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D69641"/>
+      <stop offset="100%" stop-color="#A8631E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- icon badge -->
+  <g transform="translate(20,20)">
+    <rect x="0" y="0" width="320" height="320" rx="70" fill="url(#bg)"/>
+    <circle cx="160" cy="173" r="94" fill="url(#plate)"/>
+    <circle cx="160" cy="173" r="35" fill="#181B1E"/>
+
+    <g stroke="#ECEAE4" stroke-width="4.4" fill="none" stroke-linecap="round">
+      <line x1="220" y1="103" x2="245" y2="83"/>
+      <line x1="245" y1="83" x2="245" y2="54"/>
+      <line x1="245" y1="83" x2="273" y2="94"/>
+    </g>
+    <circle cx="220" cy="103" r="6.2" fill="#ECEAE4"/>
+    <circle cx="245" cy="83" r="5" fill="#ECEAE4"/>
+    <circle cx="245" cy="54" r="4.4" fill="#ECEAE4"/>
+    <circle cx="273" cy="94" r="4.4" fill="#ECEAE4"/>
+
+    <polyline points="130,195 147,183 159,193 174,168 192,153"
+              fill="none" stroke="#ECEAE4" stroke-width="8.8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="378" y="172" font-family="DejaVu Sans Condensed, Arial Narrow, sans-serif"
+        font-weight="bold" font-size="118" fill="#1D2124" letter-spacing="1">Creatina</text>
+  <text x="380" y="272" font-family="DejaVu Sans Condensed, Arial Narrow, sans-serif"
+        font-weight="bold" font-size="72" fill="#A8631E" letter-spacing="2">TRACKER</text>
+</svg>

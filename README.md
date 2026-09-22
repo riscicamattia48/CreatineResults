@@ -2,8 +2,26 @@
 
 Webapp statica a singolo file per tracciare il peso corporeo durante l'assunzione di creatina, con grafico dell'andamento e fascia evidenziata per il range atteso di ritenzione idrica nelle prime 3-4 settimane.
 
-- Nessun backend, nessuna build: è un unico file `index.html` (HTML + CSS + JS inline).
+- Nessun backend, nessuna build: solo file statici (`index.html`, `manifest.json` e le icone), tutti nella root del repo — nessuna sottocartella.
 - I dati vengono salvati in `localStorage`, quindi restano **sul dispositivo/browser** in cui apri la pagina. Se apri il sito da più dispositivi, avrai uno storico separato per ciascuno (non c'è sincronizzazione tra dispositivi in questa versione).
+
+## Struttura del repo
+
+```
+creatine-tracker/
+├── index.html        webapp (self-contained)
+├── manifest.json      web app manifest (icona su schermata Home / PWA)
+├── icon.svg           sorgente vettoriale dell'icona
+├── icon-16.png         favicon
+├── icon-32.png         favicon
+├── icon-180.png        apple-touch-icon (iOS)
+├── icon-192.png        manifest / Android
+├── icon-512.png        manifest / Android (alta risoluzione)
+├── wordmark.svg        logo orizzontale (icona + testo), per README o pagine esterne
+└── wordmark.png
+```
+
+Su iPhone, aprendo il sito in Safari e usando "Aggiungi a Home", l'icona `icon-180.png` verrà usata automaticamente grazie al `manifest.json` e al tag `apple-touch-icon`.
 
 ## Pubblicare su GitHub Pages
 
