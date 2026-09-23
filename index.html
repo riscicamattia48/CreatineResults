@@ -28,6 +28,8 @@
     --accent-soft: rgba(198,130,44,0.16);
     --good: #7A9B76;
     --good-soft: rgba(122,155,118,0.16);
+    --line-thigh: #5C86A8;
+    --line-chest: #A6657A;
     --border: #33383C;
     --band: rgba(198,130,44,0.10);
   }
@@ -43,6 +45,8 @@
       --accent-soft: rgba(168,99,30,0.10);
       --good: #4C7048;
       --good-soft: rgba(76,112,72,0.10);
+      --line-thigh: #3E6483;
+      --line-chest: #8B4A5E;
       --border: #DBD7CC;
       --band: rgba(168,99,30,0.07);
     }
@@ -57,6 +61,8 @@
     --accent-soft: rgba(168,99,30,0.10);
     --good: #4C7048;
     --good-soft: rgba(76,112,72,0.10);
+    --line-thigh: #3E6483;
+    --line-chest: #8B4A5E;
     --border: #DBD7CC;
     --band: rgba(168,99,30,0.07);
   }
@@ -277,6 +283,16 @@
     font-weight: 500;
     white-space: nowrap;
   }
+
+  .section-divider {
+    margin: 34px 0 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  .section-divider h1 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+  }
 </style>
 </head>
 <body>
@@ -347,6 +363,53 @@
   <div class="card">
     <h2>Rilevazioni</h2>
     <div class="entries" id="entriesList"></div>
+  </div>
+
+  <div class="section-divider">
+    <h1 style="font-size:22px; margin-bottom:4px;">Circonferenze</h1>
+    <p class="subtitle" style="margin-bottom:0;">Misura una volta a settimana, a freddo (non subito dopo l'allenamento), sempre negli stessi punti.</p>
+  </div>
+
+  <div class="card">
+    <h2>Aggiungi rilevazione settimanale</h2>
+    <form id="circForm">
+      <div class="field">
+        <label for="circDate">Data</label>
+        <input type="date" id="circDate" required>
+      </div>
+      <div class="field">
+        <label for="circArm">Braccio (cm)</label>
+        <input type="number" id="circArm" step="0.1" min="15" max="70" placeholder="38.0">
+      </div>
+      <div class="field">
+        <label for="circThigh">Coscia (cm)</label>
+        <input type="number" id="circThigh" step="0.1" min="30" max="90" placeholder="58.0">
+      </div>
+      <div class="field">
+        <label for="circWaist">Vita (cm)</label>
+        <input type="number" id="circWaist" step="0.1" min="50" max="150" placeholder="82.0">
+      </div>
+      <div class="field">
+        <label for="circChest">Petto (cm)</label>
+        <input type="number" id="circChest" step="0.1" min="60" max="160" placeholder="102.0">
+      </div>
+      <div class="field wide">
+        <label for="circNote">Nota (opzionale)</label>
+        <input type="text" id="circNote" placeholder="es. dopo gamba pesante, gonfiore...">
+      </div>
+      <button type="submit">Registra</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Andamento circonferenze</h2>
+    <div class="chart-wrap"><svg id="circChart" viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <div class="legend" id="circLegend"></div>
+  </div>
+
+  <div class="card">
+    <h2>Rilevazioni circonferenze</h2>
+    <div class="entries" id="circEntriesList"></div>
   </div>
 </div>
 
@@ -564,6 +627,202 @@
     noteInput.value = '';
     dateInput.value = todayStr();
   });
+
+  // ---------- Circonferenze ----------
+  const CIRC_STORAGE_KEY = 'creatine-circ-log-v1';
+  const CIRC_FIELDS = [
+    { key: 'arm',   label: 'Braccio', color: 'var(--accent)' },
+    { key: 'thigh', label: 'Coscia',  color: 'var(--line-thigh)' },
+    { key: 'waist', label: 'Vita',    color: 'var(--good)' },
+    { key: 'chest', label: 'Petto',   color: 'var(--line-chest)' }
+  ];
+  let circEntries = [];
+
+  function loadCircLocal() {
+    try {
+      const raw = localStorage.getItem(CIRC_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.warn('Circ storage read failed', e);
+      return [];
+    }
+  }
+  function saveCircLocal(data) {
+    try {
+      localStorage.setItem(CIRC_STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.warn('Circ storage write failed', e);
+    }
+  }
+  function upsertCircEntry(entry) {
+    const idx = circEntries.findIndex(e => e.date === entry.date);
+    if (idx >= 0) circEntries[idx] = entry; else circEntries.push(entry);
+    saveCircLocal(circEntries);
+    renderCirc();
+  }
+  function deleteCircEntry(date) {
+    circEntries = circEntries.filter(e => e.date !== date);
+    saveCircLocal(circEntries);
+    renderCirc();
+  }
+
+  const circForm = document.getElementById('circForm');
+  const circDate = document.getElementById('circDate');
+  const circArm = document.getElementById('circArm');
+  const circThigh = document.getElementById('circThigh');
+  const circWaist = document.getElementById('circWaist');
+  const circChest = document.getElementById('circChest');
+  const circNote = document.getElementById('circNote');
+  const circEntriesList = document.getElementById('circEntriesList');
+  const circChart = document.getElementById('circChart');
+  const circLegend = document.getElementById('circLegend');
+
+  circDate.value = todayStr();
+
+  function renderCirc() {
+    circEntries.sort((a, b) => a.date.localeCompare(b.date));
+
+    if (circEntries.length === 0) {
+      circEntriesList.innerHTML = '<div class="empty">Nessuna rilevazione ancora. Aggiungi la prima misurazione qui sopra.</div>';
+      circChart.innerHTML = '';
+      circLegend.innerHTML = '';
+      return;
+    }
+
+    const baseline = circEntries[0];
+    const fb = fieldBaselines(circEntries);
+
+    circLegend.innerHTML = CIRC_FIELDS.map(f =>
+      `<span><span class="dot" style="background:${f.color}"></span>${f.label}</span>`
+    ).join('');
+
+    circEntriesList.innerHTML = '';
+    [...circEntries].reverse().forEach(e => {
+      const dateObj = new Date(e.date);
+      const dateLabel = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+
+      const parts = CIRC_FIELDS.map(f => {
+        const v = e[f.key];
+        if (v === undefined || v === null || v === '') return '';
+        const base = fb[f.key];
+        let deltaStr = '';
+        if (base && e.date !== base.date) {
+          const d = v - base.value;
+          deltaStr = ` <span class="delta ${d >= 0 ? 'pos' : 'neg'}">${d >= 0 ? '+' : ''}${fmt(d)}</span>`;
+        }
+        return `<span style="margin-right:14px;">${f.label.slice(0,1)}: ${fmt(v)}cm${deltaStr}</span>`;
+      }).filter(Boolean).join('');
+
+      const row = document.createElement('div');
+      row.className = 'entry';
+      row.innerHTML = `
+        <div class="left">
+          <span class="weight" style="font-size:14.5px;">${parts || '<span class="text-dim">—</span>'}</span>
+          <span class="date">${dateLabel}${e.note ? ' · <span class="note">' + escapeHtml(e.note) + '</span>' : ''}</span>
+        </div>
+        <button class="del" data-date="${e.date}" aria-label="Elimina rilevazione">Elimina</button>
+      `;
+      circEntriesList.appendChild(row);
+    });
+
+    circEntriesList.querySelectorAll('.del').forEach(btn => {
+      btn.addEventListener('click', () => deleteCircEntry(btn.dataset.date));
+    });
+
+    drawCircChart(circEntries, baseline);
+  }
+
+  function fieldBaselines(entries) {
+    const baselines = {};
+    CIRC_FIELDS.forEach(f => {
+      const first = entries.find(e => e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '');
+      if (first) baselines[f.key] = { date: first.date, value: first[f.key] };
+    });
+    return baselines;
+  }
+
+  function drawCircChart(entries, baseline) {
+    const W = 600, H = 260, padL = 40, padR = 16, padT = 16, padB = 30;
+    const innerW = W - padL - padR, innerH = H - padT - padB;
+    const startDate = baseline.date;
+    const fb = fieldBaselines(entries);
+
+    const deltaSeries = {};
+    CIRC_FIELDS.forEach(f => {
+      if (!fb[f.key]) return;
+      const pts = entries
+        .filter(e => e[f.key] !== undefined && e[f.key] !== null && e[f.key] !== '')
+        .map(e => ({ d: daysBetween(startDate, e.date), delta: e[f.key] - fb[f.key].value }));
+      if (pts.length > 0) deltaSeries[f.key] = pts;
+    });
+
+    const allDeltas = Object.values(deltaSeries).flat().map(p => p.delta);
+    if (allDeltas.length === 0) { circChart.innerHTML = ''; return; }
+
+    const maxDay = Math.max(7, ...entries.map(e => daysBetween(startDate, e.date)));
+    let minV = Math.min(0, ...allDeltas) - 0.5;
+    let maxV = Math.max(0, ...allDeltas) + 0.5;
+    if (maxV - minV < 1) { minV -= 0.5; maxV += 0.5; }
+
+    function xPos(d) { return padL + (d / maxDay) * innerW; }
+    function yPos(v) { return padT + innerH - ((v - minV) / (maxV - minV)) * innerH; }
+
+    let svg = '';
+
+    // zero reference line (baseline for every series)
+    const zeroY = yPos(0);
+    svg += `<line x1="${padL}" y1="${zeroY}" x2="${W - padR}" y2="${zeroY}" stroke="var(--border)" stroke-width="1" stroke-dasharray="4 4" />`;
+
+    const steps = 4;
+    for (let i = 0; i <= steps; i++) {
+      const v = minV + (i / steps) * (maxV - minV);
+      const y = yPos(v);
+      svg += `<text x="${padL - 6}" y="${y + 4}" text-anchor="end" font-size="10" fill="var(--text-dim)" font-family="Inter, sans-serif">${v >= 0 ? '+' : ''}${fmt(v)}</text>`;
+      svg += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="var(--border)" stroke-width="0.5" opacity="0.4" />`;
+    }
+    [0, Math.round(maxDay/2), maxDay].forEach(d => {
+      svg += `<text x="${xPos(d)}" y="${H - padB + 18}" text-anchor="middle" font-size="10" fill="var(--text-dim)" font-family="Inter, sans-serif">g${d}</text>`;
+    });
+
+    CIRC_FIELDS.forEach(f => {
+      const pts = deltaSeries[f.key];
+      if (!pts || pts.length === 0) return;
+      const pathPts = pts.map(p => `${xPos(p.d)},${yPos(p.delta)}`).join(' ');
+      svg += `<polyline points="${pathPts}" fill="none" stroke="${f.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />`;
+      pts.forEach(p => {
+        svg += `<circle cx="${xPos(p.d)}" cy="${yPos(p.delta)}" r="3.5" fill="${f.color}" stroke="var(--bg)" stroke-width="1.2" />`;
+      });
+    });
+
+    circChart.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    circChart.innerHTML = svg;
+  }
+
+  circForm.addEventListener('submit', function(ev) {
+    ev.preventDefault();
+    const date = circDate.value;
+    if (!date) return;
+
+    const entry = { date, note: circNote.value.trim() };
+    [['arm', circArm], ['thigh', circThigh], ['waist', circWaist], ['chest', circChest]].forEach(([key, input]) => {
+      const v = parseFloat(input.value);
+      if (!isNaN(v)) entry[key] = v;
+    });
+
+    // require at least one measurement besides the date
+    if (!CIRC_FIELDS.some(f => entry[f.key] !== undefined)) return;
+
+    upsertCircEntry(entry);
+    circArm.value = '';
+    circThigh.value = '';
+    circWaist.value = '';
+    circChest.value = '';
+    circNote.value = '';
+    circDate.value = todayStr();
+  });
+
+  circEntries = loadCircLocal();
+  renderCirc();
 
   initStorage();
 })();

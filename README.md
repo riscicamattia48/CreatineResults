@@ -1,6 +1,6 @@
 # Registro Peso — Creatina
 
-Webapp statica a singolo file per tracciare il peso corporeo durante l'assunzione di creatina, con grafico dell'andamento e fascia evidenziata per il range atteso di ritenzione idrica nelle prime 3-4 settimane.
+Webapp statica a singolo file per tracciare il peso corporeo durante l'assunzione di creatina, con grafico dell'andamento e fascia evidenziata per il range atteso di ritenzione idrica nelle prime 3-4 settimane. Include anche una sezione per il tracciamento settimanale delle circonferenze (braccio, coscia, vita, petto), con grafico delle variazioni rispetto al primo rilevamento.
 
 - Nessun backend, nessuna build: solo file statici (`index.html`, `manifest.json` e le icone), tutti nella root del repo — nessuna sottocartella.
 - I dati vengono salvati in `localStorage`, quindi restano **sul dispositivo/browser** in cui apri la pagina. Se apri il sito da più dispositivi, avrai uno storico separato per ciascuno (non c'è sincronizzazione tra dispositivi in questa versione).
