@@ -411,6 +411,13 @@
     <h2>Rilevazioni circonferenze</h2>
     <div class="entries" id="circEntriesList"></div>
   </div>
+
+  <div class="card" id="card-export">
+    <h2>Esporta backup</h2>
+    <p style="color:var(--text-dim);font-size:14px;line-height:1.5;margin:0 0 14px">Scarica un file con tutte le tue rilevazioni (peso e circonferenze). Poi aprilo con «Importa file» nella nuova app Creatine Effects: https://creatineeffects.pages.dev</p>
+    <button type="button" id="btn-export-backup">⬇️ Esporta backup</button>
+    <p id="export-status" style="color:var(--text-dim);font-size:13px;margin:10px 0 0;min-height:18px"></p>
+  </div>
 </div>
 
 <script>
@@ -825,6 +832,22 @@
   renderCirc();
 
   initStorage();
+})();
+</script>
+<script>
+(function () {
+  function rd(k) { try { var r = localStorage.getItem(k); var a = r ? JSON.parse(r) : []; return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  document.getElementById('btn-export-backup').addEventListener('click', function () {
+    var w = rd('creatine-weight-log-v1'), c = rd('creatine-circ-log-v1');
+    var st = document.getElementById('export-status');
+    if (!w.length && !c.length) { st.textContent = 'Non ci sono ancora rilevazioni da esportare.'; return; }
+    var blob = new Blob([JSON.stringify({ v: 1, weights: w, circs: c }, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a'), d = new Date().toISOString().slice(0, 10);
+    a.href = URL.createObjectURL(blob); a.download = 'creatine-backup-' + d + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    st.textContent = 'File scaricato: ' + w.length + ' pesate e ' + c.length + ' misurazioni.';
+  });
 })();
 </script>
 </body>

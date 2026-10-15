@@ -1,0 +1,4 @@
+Vecchia app del registro peso, con in più il pulsante "Esporta backup" (in fondo alla pagina).
+1) Carica questi file su GitHub al posto di quelli attuali (stessa cartella/repo di prima).
+2) Apri la vecchia app dallo stesso indirizzo di sempre e premi "Esporta backup": scarica un file .json.
+3) Apri https://creatineeffects.pages.dev -> menu ⋯ -> Backup -> "Importa file" e scegli quel file.
